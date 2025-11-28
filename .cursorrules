@@ -1,0 +1,45 @@
+# Cursor Rules for Stock Portfolio Project
+
+## Git Workflow Rules
+
+### Commit and Push Rules
+- Always commit changes with descriptive commit messages
+- Commit messages should follow format: "Brief description of changes"
+- After making significant changes, automatically stage, commit, and push to GitHub
+- Use the GitHub token stored in environment or provided by user for authentication
+- Remote repository: https://github.com/drace3000/Stock-Portfolio.git
+- Default branch: master
+
+### Deployment Workflow
+1. After completing a feature or set of changes:
+   - Stage all changes: `git add .`
+   - Commit with descriptive message
+   - Push to remote: `git push origin master`
+   - Remove token from remote URL after push for security
+
+### Code Quality Rules
+- All code files must have file-level comments describing purpose
+- Complex logic should have inline comments explaining how it works
+- Follow existing code style and patterns
+- Ensure no linter errors before committing
+
+### Security Rules
+- Never commit API keys or sensitive data
+- Always remove tokens from git remote URL after use
+- Ensure .env.local is in .gitignore
+- Never hardcode credentials in code
+
+### File Organization
+- Components in `/components` directory
+- API clients in `/lib/api` directory
+- State management in `/lib/store` directory
+- Utilities in `/lib/utils.ts`
+- Styles in `/app/globals.css`
+- Config files in root directory
+
+### Testing Before Push
+- Check for linter errors
+- Verify all imports are correct
+- Ensure TypeScript compiles without errors
+- Test that the app runs without runtime errors
+
