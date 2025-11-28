@@ -17,6 +17,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import SearchBar from '@/components/SearchBar';
 import Watchlist from '@/components/Watchlist';
@@ -34,12 +35,32 @@ import { TrendingUp } from 'lucide-react';
  * a smooth, professional loading experience.
  */
 export default function Home() {
+  const [dateTime, setDateTime] = useState('');
+
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      setDateTime(`${dayName} ${month}/${day}/${year} @ ${hours}:${minutes}:${seconds}`);
+    };
+
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-30 glass-card border-b border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -56,6 +77,18 @@ export default function Home() {
                 </p>
               </div>
             </motion.div>
+
+            {dateTime && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="flex-1 min-w-[240px] text-center px-4 py-2 rounded-xl glass-card border border-slate-200/50 dark:border-slate-700/50 font-mono text-sm text-slate-700 dark:text-slate-300"
+              >
+                {dateTime}
+              </motion.div>
+            )}
+
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
