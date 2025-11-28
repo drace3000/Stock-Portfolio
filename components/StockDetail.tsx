@@ -1,3 +1,21 @@
+/**
+ * components/StockDetail.tsx
+ * 
+ * Detailed stock information panel that slides in from the right.
+ * 
+ * Features:
+ * - Full-screen detail panel with smooth slide-in animation
+ * - Large interactive price chart (30-day history)
+ * - Company overview with key metrics (P/E ratio, market cap, etc.)
+ * - Sector and industry information
+ * - 52-week high/low prices
+ * - Dividend yield and EPS data
+ * - Close button to dismiss panel
+ * 
+ * The panel appears when a stock card is clicked and fetches
+ * comprehensive company data from Alpha Vantage API.
+ */
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,6 +26,17 @@ import { getAlphaVantageAPI } from '@/lib/api/alphavantage';
 import { formatCurrency, formatPercent, formatNumber, formatLargeNumber, cn } from '@/lib/utils';
 import StockChart from './StockChart';
 
+/**
+ * StockDetail Component
+ * 
+ * Displays comprehensive stock information in a slide-in panel.
+ * 
+ * How it works:
+ * 1. Activated when user clicks a stock card (sets selectedSymbol)
+ * 2. Fetches company overview and time series data
+ * 3. Displays data in organized sections with charts
+ * 4. Can be closed by clicking X or clicking outside
+ */
 export default function StockDetail() {
   const { selectedSymbol, setSelectedSymbol, getWatchlistItem, updateOverview, updateTimeSeries } = usePortfolioStore();
   const [isLoading, setIsLoading] = useState(false);
@@ -17,19 +46,24 @@ export default function StockDetail() {
   const overview = item?.overview;
   const timeSeries = item?.timeSeries || [];
 
+  // Fetch detailed company data when a stock is selected
   useEffect(() => {
     const fetchDetails = async () => {
+      // Don't fetch if no stock is selected
       if (!selectedSymbol) return;
 
       setIsLoading(true);
       const api = getAlphaVantageAPI();
 
       try {
+        // Fetch company overview and time series data in parallel
+        // Overview contains fundamentals, time series contains price history
         const [overviewData, timeSeriesData] = await Promise.all([
           api.getCompanyOverview(selectedSymbol),
           api.getTimeSeries(selectedSymbol, 'daily'),
         ]);
 
+        // Update store with fetched data for display
         if (overviewData) {
           updateOverview(selectedSymbol, overviewData);
         }
@@ -43,6 +77,7 @@ export default function StockDetail() {
       }
     };
 
+    // Fetch when selectedSymbol changes
     fetchDetails();
   }, [selectedSymbol, updateOverview, updateTimeSeries]);
 
@@ -290,4 +325,5 @@ export default function StockDetail() {
     </AnimatePresence>
   );
 }
+
 

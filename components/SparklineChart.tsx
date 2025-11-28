@@ -1,3 +1,21 @@
+/**
+ * components/SparklineChart.tsx
+ * 
+ * Mini sparkline chart component for displaying compact price trends.
+ * 
+ * Features:
+ * - Compact line chart (typically 12px height)
+ * - Normalized data to fit within container
+ * - Color-coded by trend (green for positive, red for negative)
+ * - Gradient fill matching trend direction
+ * - Interactive tooltip on hover
+ * - Smooth animations
+ * - Handles empty data gracefully
+ * 
+ * Used in StockCard components to show quick price trend visualization
+ * without taking up much space.
+ */
+
 'use client';
 
 import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
@@ -8,6 +26,18 @@ interface SparklineChartProps {
   isPositive: boolean;
 }
 
+/**
+ * SparklineChart Component
+ * 
+ * Renders a mini line chart showing normalized price trends.
+ * 
+ * How it works:
+ * 1. Normalizes price data to 0-100% range for consistent display
+ * 2. Uses color based on trend direction (green/red)
+ * 3. Renders compact line chart with gradient fill
+ * 4. Shows price tooltip on hover
+ * 5. Handles edge cases (empty data, single data point)
+ */
 export default function SparklineChart({ data, isPositive }: SparklineChartProps) {
   if (!data || data.length === 0) {
     return (

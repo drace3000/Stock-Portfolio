@@ -1,3 +1,20 @@
+/**
+ * components/StockChart.tsx
+ * 
+ * Large interactive area chart component for displaying stock price history.
+ * 
+ * Features:
+ * - 30-day price history visualization
+ * - Area chart with gradient fill
+ * - Interactive tooltip showing OHLC data (Open, High, Low, Close)
+ * - Responsive design that adapts to container size
+ * - Y-axis domain calculated with 10% padding for better visualization
+ * - Dark mode support
+ * - Smooth animations on data load
+ * 
+ * Used in the StockDetail panel to show comprehensive price trends.
+ */
+
 'use client';
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -8,6 +25,18 @@ interface StockChartProps {
   symbol: string;
 }
 
+/**
+ * StockChart Component
+ * 
+ * Renders a large area chart showing 30-day price history.
+ * 
+ * How it works:
+ * 1. Transforms time series data into chart format
+ * 2. Calculates price range and sets Y-axis domain with padding
+ * 3. Renders area chart with gradient fill
+ * 4. Shows detailed tooltip on hover with OHLC data
+ * 5. Handles empty data gracefully with fallback message
+ */
 export default function StockChart({ data, symbol }: StockChartProps) {
   if (!data || data.length === 0) {
     return (

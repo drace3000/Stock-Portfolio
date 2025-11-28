@@ -1,3 +1,24 @@
+/**
+ * components/StockTicker.tsx
+ * 
+ * Real-time scrolling stock ticker component displaying market data.
+ * 
+ * Features:
+ * - Continuous right-to-left scrolling animation
+ * - Major US and international market indices (S&P 500, Dow, NASDAQ, etc.)
+ * - European markets (FTSE, DAX, CAC 40, etc.)
+ * - Asian markets (Nikkei, Shanghai Composite, Hang Seng, etc.)
+ * - Watchlist items highlighted with star indicator
+ * - Market status detection (open/closed) for each region
+ * - Real-time price updates every 60 seconds
+ * - Market status indicator showing US market status
+ * - Color-coded price changes (green up, red down)
+ * 
+ * The ticker prioritizes market indices first, then watchlist items,
+ * then popular stocks. It detects market hours for each region based
+ * on timezone and displays "CLOSED" indicators when markets are closed.
+ */
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -90,6 +111,20 @@ const POPULAR_STOCKS = [
   'ASML', 'TSM', 'NVO', 'SAP', 'UL', 'NVS', 'HSBC', 'BP', 'GSK', 'AZN',
 ];
 
+/**
+ * StockTicker Component
+ * 
+ * Displays a continuously scrolling ticker with market data.
+ * 
+ * How it works:
+ * 1. Loads watchlist items with quotes immediately (instant display)
+ * 2. Fetches market indices and popular stocks from API
+ * 3. Checks market status for each region based on timezone
+ * 4. Sorts items: market indices first, then watchlist, then others
+ * 5. Duplicates items for seamless infinite scrolling
+ * 6. Updates every 60 seconds with fresh data
+ * 7. Uses CSS animation to scroll continuously from right to left
+ */
 export default function StockTicker() {
   const { watchlist } = usePortfolioStore();
   const [tickerItems, setTickerItems] = useState<TickerItem[]>([]);
@@ -97,18 +132,20 @@ export default function StockTicker() {
   const [marketStatus, setMarketStatus] = useState<'open' | 'closed'>('open');
 
   useEffect(() => {
-    // Check US market status
+    // Check US market status for overall indicator
     setMarketStatus(isUSMarketOpen() ? 'open' : 'closed');
     
-    // Update market status every minute
+    // Update market status every minute to reflect current time
     const statusInterval = setInterval(() => {
       setMarketStatus(isUSMarketOpen() ? 'open' : 'closed');
     }, 60000);
 
-    // First, use watchlist items that already have quotes (instant display)
+    // Load watchlist items that already have quotes for instant display
+    // This provides immediate feedback while API calls are in progress
     const watchlistItemsWithQuotes: TickerItem[] = watchlist
       .filter(item => item.quote)
       .map(item => {
+        // Check if watchlist item is a market index
         const marketIndex = MARKET_INDICES.find(idx => idx.symbol === item.symbol);
         const isIndex = !!marketIndex;
         return {
@@ -119,20 +156,23 @@ export default function StockTicker() {
           changePercent: item.quote!.changePercent,
           isWatchlist: true,
           isMarketIndex: isIndex,
+          // Determine market status for indices based on their timezone
           marketStatus: marketIndex ? (isMarketOpenForIndex(marketIndex) ? 'open' : 'closed') : undefined,
           region: marketIndex ? marketIndex.region : undefined,
         };
       });
 
-    // Show watchlist items immediately if available
+    // Display watchlist items immediately if available
+    // Duplicate items for seamless infinite scrolling
     if (watchlistItemsWithQuotes.length > 0) {
       const sorted = [...watchlistItemsWithQuotes].sort((a, b) => {
-        // Market indices first
+        // Prioritize market indices in display
         if (a.isMarketIndex && !b.isMarketIndex) return -1;
         if (!a.isMarketIndex && b.isMarketIndex) return 1;
-        // Then by change percent
+        // Then sort by absolute change percentage (most volatile first)
         return Math.abs(b.changePercent) - Math.abs(a.changePercent);
       });
+      // Duplicate array for seamless scrolling animation
       setTickerItems([...sorted, ...sorted]);
       setIsLoading(false);
     }

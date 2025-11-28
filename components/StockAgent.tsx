@@ -1,3 +1,24 @@
+/**
+ * components/StockAgent.tsx
+ * 
+ * AI-powered stock analysis agent component.
+ * 
+ * Features:
+ * - Floating action button (bottom-right) with bot icon
+ * - Slide-in panel with AI-generated insights
+ * - Analyzes watchlist stocks for:
+ *   - High volatility alerts (>5% change)
+ *   - Price movement insights (2-5% change)
+ *   - Stable stock recommendations (<0.5% change)
+ *   - Portfolio-level analysis
+ * - Priority-based insights (high/medium/low)
+ * - Color-coded cards by priority level
+ * - Badge showing count of high-priority alerts
+ * 
+ * The agent generates insights based on real-time market data
+ * from the user's watchlist, providing actionable recommendations.
+ */
+
 'use client';
 
 import { useState } from 'react';
@@ -14,15 +35,38 @@ interface AgentInsight {
   timestamp: number;
 }
 
+/**
+ * StockAgent Component
+ * 
+ * AI assistant that analyzes watchlist stocks and provides insights.
+ * 
+ * How it works:
+ * 1. User clicks floating bot button
+ * 2. Component analyzes all stocks in watchlist
+ * 3. Generates insights based on price movements and volatility
+ * 4. Displays insights sorted by priority in slide-in panel
+ * 5. Shows portfolio-level analysis when applicable
+ */
 export default function StockAgent() {
   const { watchlist } = usePortfolioStore();
   const [isOpen, setIsOpen] = useState(false);
   const [insights, setInsights] = useState<AgentInsight[]>([]);
 
-  // Generate insights based on watchlist data
+  /**
+   * Generate AI-powered insights based on watchlist stock data
+   * 
+   * Analyzes each stock's price movement and generates:
+   * - High priority alerts for significant volatility (>5%)
+   * - Medium priority insights for moderate movements (2-5%)
+   * - Low priority recommendations for stable stocks (<0.5%)
+   * - Portfolio-level analysis based on overall performance
+   * 
+   * @returns Array of insights sorted by priority (high to low)
+   */
   const generateInsights = (): AgentInsight[] => {
     const newInsights: AgentInsight[] = [];
 
+    // Analyze each stock in the watchlist
     watchlist.forEach((item) => {
       if (!item.quote) return;
 
@@ -31,7 +75,8 @@ export default function StockAgent() {
       const price = quote.price;
       const change = quote.change || 0;
 
-      // High volatility alert
+      // High volatility alert: Significant price movement (>5%)
+      // Indicates potential opportunity or risk
       if (Math.abs(changePercent) > 5) {
         newInsights.push({
           type: 'alert',
@@ -42,7 +87,8 @@ export default function StockAgent() {
         });
       }
 
-      // Price movement insights
+      // Price movement insights: Moderate changes (2-5%)
+      // Provides context on market momentum
       if (Math.abs(changePercent) > 2 && Math.abs(changePercent) <= 5) {
         newInsights.push({
           type: 'insight',
@@ -53,7 +99,8 @@ export default function StockAgent() {
         });
       }
 
-      // Low price movement recommendation
+      // Low price movement recommendation: Stable stocks (<0.5%)
+      // Suggests reviewing fundamentals when price is stable
       if (Math.abs(changePercent) < 0.5) {
         newInsights.push({
           type: 'recommendation',
@@ -65,8 +112,9 @@ export default function StockAgent() {
       }
     });
 
-    // Portfolio diversity check
+    // Portfolio-level analysis: Check overall watchlist performance
     if (watchlist.length > 0) {
+      // Count stocks with positive change
       const positiveCount = watchlist.filter(
         (item) => item.quote && (item.quote.changePercent || 0) > 0
       ).length;
@@ -74,6 +122,7 @@ export default function StockAgent() {
 
       if (totalCount > 0) {
         const positiveRatio = positiveCount / totalCount;
+        // Strong portfolio: >70% positive
         if (positiveRatio > 0.7) {
           newInsights.push({
             type: 'insight',
@@ -82,7 +131,9 @@ export default function StockAgent() {
             priority: 'medium',
             timestamp: Date.now(),
           });
-        } else if (positiveRatio < 0.3) {
+        } 
+        // Weak portfolio: <30% positive - alert user
+        else if (positiveRatio < 0.3) {
           newInsights.push({
             type: 'alert',
             symbol: 'PORTFOLIO',
@@ -94,6 +145,7 @@ export default function StockAgent() {
       }
     }
 
+    // Sort insights by priority (high -> medium -> low) for better UX
     return newInsights.sort((a, b) => {
       const priorityOrder = { high: 3, medium: 2, low: 1 };
       return priorityOrder[b.priority] - priorityOrder[a.priority];
@@ -251,4 +303,5 @@ export default function StockAgent() {
     </>
   );
 }
+
 

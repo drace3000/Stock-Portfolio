@@ -1,9 +1,27 @@
+/**
+ * tsconfig.json
+ * 
+ * TypeScript configuration for the project.
+ * 
+ * Configures:
+ * - Target: ES2020 for modern JavaScript features
+ * - Module system: ESNext modules with bundler resolution
+ * - Strict mode: Enabled for type safety
+ * - Path aliases: @/* maps to project root for clean imports
+ * - JSX: Preserved for Next.js processing
+ * 
+ * This configuration ensures type safety and enables modern TypeScript features
+ * while maintaining compatibility with Next.js and React.
+ */
 {
   "compilerOptions": {
+    // Target ES2020 for modern JavaScript features
     "target": "ES2020",
+    // Include DOM types and latest ES features
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
+    // Enable strict type checking for better code quality
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -11,6 +29,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Preserve JSX for Next.js to handle
     "jsx": "preserve",
     "incremental": true,
     "plugins": [
@@ -18,11 +37,15 @@
         "name": "next"
       }
     ],
+    // Path alias: @/* maps to project root (e.g., @/components, @/lib)
     "paths": {
       "@/*": ["./*"]
     }
   },
+  // Include all TypeScript files in the project
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  // Exclude node_modules from type checking
   "exclude": ["node_modules"]
 }
+
 

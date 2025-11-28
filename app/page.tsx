@@ -1,3 +1,20 @@
+/**
+ * app/page.tsx
+ * 
+ * Main page component for the Stock Portfolio application.
+ * 
+ * This is the root page component that orchestrates all major features:
+ * - Header with app branding and theme toggle
+ * - Real-time stock ticker displaying market indicators and watchlist items
+ * - Search functionality to add stocks to watchlist
+ * - Watchlist display showing user's tracked stocks
+ * - Stock detail panel (slides in from right when stock is selected)
+ * - Stock Agent component (floating AI assistant button)
+ * 
+ * The page uses Framer Motion for smooth animations and transitions,
+ * creating a polished, premium user experience with staggered entry animations.
+ */
+
 'use client';
 
 import { motion } from 'framer-motion';
@@ -9,6 +26,13 @@ import StockTicker from '@/components/StockTicker';
 import StockAgent from '@/components/StockAgent';
 import { TrendingUp } from 'lucide-react';
 
+/**
+ * Home Component
+ * 
+ * Main page layout component that renders all sections of the application.
+ * Uses Framer Motion for entrance animations with staggered delays to create
+ * a smooth, professional loading experience.
+ */
 export default function Home() {
   return (
     <div className="min-h-screen">

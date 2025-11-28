@@ -1,3 +1,21 @@
+/**
+ * components/SearchBar.tsx
+ * 
+ * Stock search bar component with autocomplete functionality.
+ * 
+ * Features:
+ * - Real-time stock symbol search using Alpha Vantage API
+ * - Debounced search (300ms delay) to minimize API calls
+ * - Dropdown suggestions with stock symbol, name, type, and region
+ * - Visual indicators for stocks already in watchlist
+ * - Error handling with user-friendly messages
+ * - Click-outside detection to close dropdown
+ * - Loading states and animations
+ * 
+ * The component searches for stocks as the user types (minimum 2 characters)
+ * and displays up to 10 matching results in a scrollable dropdown.
+ */
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -7,6 +25,18 @@ import { usePortfolioStore } from '@/lib/store/portfolioStore';
 import { getAlphaVantageAPI } from '@/lib/api/alphavantage';
 import { cn } from '@/lib/utils';
 
+/**
+ * SearchBar Component
+ * 
+ * Provides stock search functionality with autocomplete suggestions.
+ * 
+ * How it works:
+ * 1. User types in search input (minimum 2 characters required)
+ * 2. Debounced API call searches Alpha Vantage for matching symbols
+ * 3. Results displayed in animated dropdown with stock details
+ * 4. User can click result to add to watchlist or press Enter
+ * 5. Dropdown closes on outside click or after selection
+ */
 export default function SearchBar() {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -16,6 +46,7 @@ export default function SearchBar() {
   const searchRef = useRef<HTMLDivElement>(null);
   const { addToWatchlist, watchlist } = usePortfolioStore();
 
+  // Close dropdown when clicking outside the search component
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -27,8 +58,10 @@ export default function SearchBar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Search for stock symbols as user types (debounced)
   useEffect(() => {
     const searchSymbols = async () => {
+      // Require minimum 2 characters to search
       if (query.length < 2) {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -41,7 +74,7 @@ export default function SearchBar() {
       try {
         const api = getAlphaVantageAPI();
         const results = await api.searchSymbols(query);
-        setSuggestions(results.slice(0, 10)); // Show more results
+        setSuggestions(results.slice(0, 10)); // Limit to 10 results for display
         setShowSuggestions(true);
         if (results.length === 0) {
           setError('No results found. Try a different search term.');
@@ -50,7 +83,7 @@ export default function SearchBar() {
         console.error('Search error:', error);
         const errorMessage = error?.message || 'Failed to search. Please try again.';
         
-        // Check for specific error types
+        // Provide user-friendly error messages based on error type
         if (errorMessage.includes('API key')) {
           setError('API key not configured. Please set NEXT_PUBLIC_ALPHAVANTAGE_API_KEY in your .env.local file.');
         } else if (errorMessage.includes('Thank you for using Alpha Vantage') || errorMessage.includes('rate limit')) {
@@ -66,6 +99,7 @@ export default function SearchBar() {
       }
     };
 
+    // Debounce search to avoid excessive API calls (300ms delay)
     const debounceTimer = setTimeout(searchSymbols, 300);
     return () => clearTimeout(debounceTimer);
   }, [query]);

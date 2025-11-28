@@ -1,11 +1,30 @@
+/**
+ * tailwind.config.ts
+ * 
+ * Tailwind CSS configuration file.
+ * 
+ * Configures:
+ * - Content paths for JIT compilation
+ * - Dark mode strategy (class-based)
+ * - Custom color palette (primary colors)
+ * - Custom animations (fade-in, slide-up, scroll, etc.)
+ * - Custom shadows (glow effects, soft shadows)
+ * - Font families (Inter)
+ * 
+ * The config extends Tailwind's default theme with custom values
+ * used throughout the application for consistent styling.
+ */
+
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  // Files that Tailwind should scan for class names
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // Use class-based dark mode (add 'dark' class to HTML element)
   darkMode: 'class',
   theme: {
     extend: {

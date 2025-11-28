@@ -1,3 +1,21 @@
+/**
+ * components/StockCard.tsx
+ * 
+ * Individual stock card component displayed in the watchlist.
+ * 
+ * Features:
+ * - Displays stock symbol, name, current price, and change percentage
+ * - Mini sparkline chart showing 30-day price trend
+ * - Auto-refreshes stock data every 60 seconds
+ * - Click to open detailed view panel
+ * - Remove button to delete from watchlist
+ * - Loading state while fetching data
+ * - Price change animations (green for up, red for down)
+ * 
+ * The component fetches real-time quote data and time series data
+ * from Alpha Vantage API and stores it in the Zustand store.
+ */
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -14,28 +32,43 @@ interface StockCardProps {
   index: number;
 }
 
+/**
+ * StockCard Component
+ * 
+ * Renders a single stock card with:
+ * - Real-time price and change data
+ * - Sparkline chart visualization
+ * - Interactive actions (view details, remove)
+ * 
+ * Automatically fetches and updates stock data every 60 seconds.
+ */
 export default function StockCard({ symbol, name, index }: StockCardProps) {
   const { updateQuote, updateTimeSeries, removeFromWatchlist, getWatchlistItem, setSelectedSymbol } = usePortfolioStore();
   const item = getWatchlistItem(symbol);
   const [isUpdating, setIsUpdating] = useState(false);
   const [prevPrice, setPrevPrice] = useState<number | null>(null);
 
+  // Fetch stock data on mount and set up auto-refresh interval
   useEffect(() => {
     const fetchData = async () => {
       setIsUpdating(true);
       const api = getAlphaVantageAPI();
       
       try {
+        // Fetch quote and time series data in parallel for better performance
         const [quote, timeSeries] = await Promise.all([
           api.getQuote(symbol),
           api.getTimeSeries(symbol, 'daily'),
         ]);
 
         if (quote) {
+          // Store previous price to detect changes for animations
           setPrevPrice(item?.quote?.price || null);
+          // Update store with new quote data
           updateQuote(symbol, quote);
         }
         if (timeSeries) {
+          // Update store with historical data for charts
           updateTimeSeries(symbol, timeSeries);
         }
       } catch (error) {
@@ -45,16 +78,19 @@ export default function StockCard({ symbol, name, index }: StockCardProps) {
       }
     };
 
+    // Fetch immediately on mount
     fetchData();
-    // Refresh every 60 seconds
+    // Set up interval to refresh data every 60 seconds
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, [symbol, updateQuote, updateTimeSeries]);
 
+  // Extract data from store for display
   const quote = item?.quote;
   const timeSeries = item?.timeSeries || [];
   const changePercent = quote?.changePercent || 0;
   const isPositive = changePercent >= 0;
+  // Track if price has changed for animation effects
   const priceChanged = prevPrice !== null && quote && prevPrice !== quote.price;
 
   const handleClick = () => {
@@ -144,4 +180,5 @@ export default function StockCard({ symbol, name, index }: StockCardProps) {
     </motion.div>
   );
 }
+
 

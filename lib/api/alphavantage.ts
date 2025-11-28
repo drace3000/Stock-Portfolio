@@ -1,8 +1,28 @@
+/**
+ * lib/api/alphavantage.ts
+ * 
+ * Alpha Vantage API client for fetching stock market data.
+ * 
+ * Features:
+ * - Stock quote retrieval (current price, change, volume, etc.)
+ * - Time series data (historical prices for charts)
+ * - Company overview (fundamentals, metrics, description)
+ * - Symbol search (autocomplete functionality)
+ * - In-memory caching (1-minute cache duration) to minimize API calls
+ * - Rate limit handling and error management
+ * - Singleton pattern for API instance management
+ * 
+ * The API client implements intelligent caching to respect Alpha Vantage's
+ * rate limits (5 calls per minute on free tier) while providing fast
+ * responses for frequently accessed data.
+ */
+
 import axios from 'axios';
 
 const API_BASE_URL = 'https://www.alphavantage.co/query';
 
 // Cache for API responses (simple in-memory cache)
+// Reduces API calls and improves performance by caching responses for 1 minute
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 60000; // 1 minute cache
 
@@ -67,6 +87,19 @@ export interface SearchResult {
   region: string;
 }
 
+/**
+ * AlphaVantageAPI Class
+ * 
+ * Main API client class that handles all interactions with Alpha Vantage API.
+ * 
+ * Methods:
+ * - getQuote(): Get current stock quote with price, change, volume
+ * - getTimeSeries(): Get historical price data for charts
+ * - getCompanyOverview(): Get company fundamentals and metrics
+ * - searchSymbols(): Search for stock symbols by keyword
+ * 
+ * All methods implement caching to minimize API calls and handle errors gracefully.
+ */
 class AlphaVantageAPI {
   private apiKey: string;
 
@@ -74,6 +107,17 @@ class AlphaVantageAPI {
     this.apiKey = apiKey;
   }
 
+  /**
+   * Get current stock quote
+   * 
+   * Fetches real-time quote data including:
+   * - Current price
+   * - Price change and percentage
+   * - Volume, high, low, open prices
+   * - Previous close
+   * 
+   * Uses caching to avoid redundant API calls.
+   */
   async getQuote(symbol: string): Promise<StockQuote | null> {
     const cacheKey = `quote_${symbol}`;
     const cached = getCached(cacheKey);
@@ -119,6 +163,15 @@ class AlphaVantageAPI {
     }
   }
 
+  /**
+   * Get historical time series data for charts
+   * 
+   * Fetches historical price data (OHLCV) for a stock.
+   * Supports daily and intraday intervals (1min, 5min, 15min, 30min, 60min).
+   * 
+   * Returns last 30 data points sorted chronologically.
+   * Used for rendering price charts and sparklines.
+   */
   async getTimeSeries(symbol: string, interval: '1min' | '5min' | '15min' | '30min' | '60min' | 'daily' = 'daily'): Promise<TimeSeriesData[]> {
     const cacheKey = `timeseries_${symbol}_${interval}`;
     const cached = getCached(cacheKey);
@@ -172,6 +225,18 @@ class AlphaVantageAPI {
     }
   }
 
+  /**
+   * Get comprehensive company overview and fundamentals
+   * 
+   * Fetches detailed company information including:
+   * - Company description
+   * - Sector and industry
+   * - Market capitalization
+   * - P/E ratio, EPS, dividend yield
+   * - Beta, 52-week high/low
+   * 
+   * Used in the StockDetail panel to display company information.
+   */
   async getCompanyOverview(symbol: string): Promise<CompanyOverview | null> {
     const cacheKey = `overview_${symbol}`;
     const cached = getCached(cacheKey);
@@ -214,6 +279,15 @@ class AlphaVantageAPI {
     }
   }
 
+  /**
+   * Search for stock symbols by keyword
+   * 
+   * Searches Alpha Vantage database for matching stock symbols.
+   * Returns array of results with symbol, name, type, and region.
+   * 
+   * Used by SearchBar component for autocomplete functionality.
+   * Validates API key before making request.
+   */
   async searchSymbols(keywords: string): Promise<SearchResult[]> {
     if (!this.apiKey) {
       throw new Error('API key not configured. Please set NEXT_PUBLIC_ALPHAVANTAGE_API_KEY in your environment variables.');
@@ -279,8 +353,17 @@ class AlphaVantageAPI {
 }
 
 // Singleton instance - will be initialized with API key from env
+// Ensures only one API instance exists throughout the application
 let apiInstance: AlphaVantageAPI | null = null;
 
+/**
+ * Get or create the singleton Alpha Vantage API instance
+ * 
+ * Reads API key from environment variable NEXT_PUBLIC_ALPHAVANTAGE_API_KEY.
+ * Creates instance on first call, returns existing instance on subsequent calls.
+ * 
+ * @returns AlphaVantageAPI instance
+ */
 export function getAlphaVantageAPI(): AlphaVantageAPI {
   if (!apiInstance) {
     const apiKey = process.env.NEXT_PUBLIC_ALPHAVANTAGE_API_KEY || '';
