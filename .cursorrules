@@ -17,6 +17,25 @@
    - Push to remote: `git push origin master`
    - Remove token from remote URL after push for security
 
+### Quick Deploy Command
+To quickly deploy changes, use the deployment script:
+```bash
+./scripts/deploy.sh "Your commit message here"
+```
+
+Or manually:
+```bash
+git add .
+git commit -m "Your commit message"
+git push origin master
+```
+
+### GitHub Authentication
+- When pushing, temporarily add token to remote URL:
+  `git remote set-url origin https://TOKEN@github.com/drace3000/Stock-Portfolio.git`
+- After push, remove token for security:
+  `git remote set-url origin https://github.com/drace3000/Stock-Portfolio.git`
+
 ### Code Quality Rules
 - All code files must have file-level comments describing purpose
 - Complex logic should have inline comments explaining how it works
